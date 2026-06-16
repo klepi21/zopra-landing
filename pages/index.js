@@ -118,7 +118,10 @@ export default function Home() {
         </div>
 
         <div className={styles.heroImageWrap}>
-          <img src="/screenshots/screen1.png" alt="ZOPRA app intro" className={styles.phoneGlow} />
+          <div className={`${styles.phoneFrame} ${styles.phoneGlow}`}>
+            <span className={styles.phoneFrameNotch} />
+            <img src="/screenshots/raw1.jpg" alt="ZOPRA αρχική οθόνη" />
+          </div>
         </div>
       </section>
 
@@ -126,8 +129,14 @@ export default function Home() {
       <section className={styles.aboutSection} id="about">
         <div className={styles.aboutCard}>
           <Starburst size={90} color="#7C3AED" style={{ top: -20, left: -10 }} />
-          <img src="/screenshots/screen3.png" alt="ZOPRA αρχική οθόνη" className={styles.aboutPhoneBack} />
-          <img src="/screenshots/screen2.png" alt="Πώς παίζεται" className={styles.aboutPhoneFront} />
+          <div className={`${styles.phoneFrame} ${styles.aboutPhoneBack}`}>
+            <span className={styles.phoneFrameNotch} />
+            <img src="/screenshots/raw3.jpg" alt="ZOPRA σύστημα επιπέδων" />
+          </div>
+          <div className={`${styles.phoneFrame} ${styles.aboutPhoneFront}`}>
+            <span className={styles.phoneFrameNotch} />
+            <img src="/screenshots/raw5.jpg" alt="ZOPRA λόμπι παιχνιδιού" />
+          </div>
         </div>
         <div className={styles.aboutText}>
           <span className={styles.eyebrow}>Σχετικά με το παιχνίδι</span>
@@ -186,9 +195,18 @@ export default function Home() {
 
         <div className={styles.fannedPhones}>
           <Starburst size={70} color="#FFFFFF" style={{ position: 'absolute', left: '18%', top: 0 }} />
-          <img src="/screenshots/screen4.png" alt="ZOPRA lobby" className={`${styles.fannedPhone} ${styles.fannedPhoneLeft}`} />
-          <img src="/screenshots/screen3.png" alt="ZOPRA αρχική οθόνη" className={`${styles.fannedPhone} ${styles.fannedPhoneCenter}`} />
-          <img src="/screenshots/screen5.png" alt="ZOPRA κατάταξη" className={`${styles.fannedPhone} ${styles.fannedPhoneRight}`} />
+          <div className={`${styles.phoneFrame} ${styles.fannedPhone} ${styles.fannedPhoneLeft}`}>
+            <span className={styles.phoneFrameNotch} />
+            <img src="/screenshots/raw4.jpg" alt="ZOPRA δημιουργία παιχνιδιού" />
+          </div>
+          <div className={`${styles.phoneFrame} ${styles.fannedPhone} ${styles.fannedPhoneCenter}`}>
+            <span className={styles.phoneFrameNotch} />
+            <img src="/screenshots/raw1.jpg" alt="ZOPRA αρχική οθόνη" />
+          </div>
+          <div className={`${styles.phoneFrame} ${styles.fannedPhone} ${styles.fannedPhoneRight}`}>
+            <span className={styles.phoneFrameNotch} />
+            <img src="/screenshots/raw2.jpg" alt="ZOPRA παγκόσμια κατάταξη" />
+          </div>
         </div>
       </section>
 

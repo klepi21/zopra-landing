@@ -295,6 +295,8 @@ export default function Home() {
         <a href="/privacy" className={styles.footerLink}>Privacy</a>
         <span className={styles.footerDivider}>·</span>
         <a href="/terms" className={styles.footerLink}>Terms</a>
+        <span className={styles.footerDivider}>·</span>
+        <a href="mailto:kolepidas@gmail.com" className={styles.footerLink}>Support</a>
       </footer>
     </div>
   );

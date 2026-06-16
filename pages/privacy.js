@@ -1,6 +1,14 @@
+import Head from 'next/head';
+
 export default function Privacy() {
   return (
     <div style={styles.page}>
+      <Head>
+        <title>Πολιτική Απορρήτου | ZOPRA</title>
+        <meta name="description" content="Πολιτική απορρήτου της εφαρμογής ZOPRA — πώς συλλέγουμε, χρησιμοποιούμε και προστατεύουμε τα δεδομένα σας." />
+        <link rel="canonical" href="https://zopra.app/privacy" />
+        <meta name="robots" content="index, follow" />
+      </Head>
       <div style={styles.content}>
         <h1 style={styles.title}>⚡ ZOPRA — Privacy Policy</h1>
         <p style={styles.updated}>Last updated: 2026</p>

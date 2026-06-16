@@ -6,25 +6,20 @@ export default function Document() {
       <Head>
         <meta charSet="utf-8" />
         <meta name="theme-color" content="#060810" />
-        <meta
-          name="description"
-          content="ZOPRA — Το ελληνικό παιχνίδι λέξεων Όνομα, Ζώο, Πράγμα. Παίξε online με φίλους σε πραγματικό χρόνο, δωρεάν στο iOS."
-        />
-        <meta property="og:title" content="ZOPRA — Το παιχνίδι λέξεων που μεγαλώσαμε όλοι" />
-        <meta
-          property="og:description"
-          content="Όνομα, Ζώο, Πράγμα — online, με φίλους, σε πραγματικό χρόνο. Δωρεάν στο iOS."
-        />
-        <meta property="og:type" content="website" />
-        <link
-          rel="preconnect"
-          href="https://fonts.googleapis.com"
-        />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
+        <meta name="robots" content="index, follow" />
+        <meta name="author" content="ZOPRA" />
+
+        {/* Favicons (site-wide, identical on every page) */}
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+
+        {/* Fonts */}
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
           href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap"
           rel="stylesheet"

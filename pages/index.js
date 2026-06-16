@@ -3,6 +3,51 @@ import { useRef } from 'react';
 import styles from '../styles/Home.module.css';
 
 const APP_STORE_URL = 'https://apps.apple.com/us/app/zopra-%CF%8C%CE%BD%CE%BF%CE%BC%CE%B1-%CE%B6%CF%8E%CE%BF-%CF%80%CF%81%CE%AC%CE%B3%CE%BC%CE%B1/id6771102888';
+const SITE_URL = 'https://zopra.app';
+const TITLE = 'ZOPRA — Όνομα Ζώο Πράγμα Online | Παιχνίδι Λέξεων με Φίλους';
+const DESCRIPTION =
+  'ZOPRA: το κλασικό Όνομα Ζώο Πράγμα σε νέα ψηφιακή μορφή. Παίξε online με φίλους σε πραγματικό χρόνο, δημιούργησε δωμάτιο με κωδικό, ανέβα στην παγκόσμια κατάταξη. Δωρεάν για iOS.';
+const OG_IMAGE = `${SITE_URL}/og-image.png`;
+
+const STRUCTURED_DATA = {
+  '@context': 'https://schema.org',
+  '@type': 'MobileApplication',
+  name: 'ZOPRA - Όνομα Ζώο Πράγμα',
+  operatingSystem: 'iOS',
+  applicationCategory: 'GameApplication',
+  description: DESCRIPTION,
+  url: SITE_URL,
+  image: OG_IMAGE,
+  offers: { '@type': 'Offer', price: '0', priceCurrency: 'EUR' },
+  publisher: { '@type': 'Organization', name: 'ZOPRA', url: SITE_URL },
+};
+
+const FAQ_STRUCTURED_DATA = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: [
+    {
+      '@type': 'Question',
+      name: 'Είναι δωρεάν το ZOPRA;',
+      acceptedAnswer: { '@type': 'Answer', text: 'Ναι, το ZOPRA είναι 100% δωρεάν στο κατέβασμα και στην χρήση του.' },
+    },
+    {
+      '@type': 'Question',
+      name: 'Πόσοι παίκτες μπορούν να παίξουν μαζί;',
+      acceptedAnswer: { '@type': 'Answer', text: 'Μέχρι 8 παίκτες σε ένα δωμάτιο, ιδιωτικό ή δημόσιο.' },
+    },
+    {
+      '@type': 'Question',
+      name: 'Χρειάζεται λογαριασμός;',
+      acceptedAnswer: { '@type': 'Answer', text: 'Χρειάζεται μόνο ένα όνομα χρήστη — η εγγραφή παίρνει λιγότερο από ένα λεπτό.' },
+    },
+    {
+      '@type': 'Question',
+      name: 'Υπάρχει έκδοση για Android;',
+      acceptedAnswer: { '@type': 'Answer', text: 'Σύντομα! Αυτή τη στιγμή το ZOPRA είναι διαθέσιμο μόνο για iOS.' },
+    },
+  ],
+};
 
 const FEATURES = [
   { icon: '⚡', title: 'Real-time Multiplayer', desc: 'Παίξε live με φίλους, χωρίς καθυστερήσεις, σε πραγματικό χρόνο.' },
@@ -64,7 +109,37 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <Head>
-        <title>ZOPRA — Το ελληνικό παιχνίδι λέξεων</title>
+        <title>{TITLE}</title>
+        <meta name="description" content={DESCRIPTION} />
+        <meta
+          name="keywords"
+          content="όνομα ζώο πράγμα, όνομα ζώο πράγμα online, παιχνίδι λέξεων, ελληνικό παιχνίδι, παιχνίδι με φίλους online, παιχνίδι παρέας, zopra, παιχνίδι με γράμματα, scattergories ελληνικά, stop παιχνίδι λέξεων, παιχνίδι κινητό δωρεάν, multiplayer word game greek"
+        />
+        <link rel="canonical" href={SITE_URL} />
+
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={SITE_URL} />
+        <meta property="og:title" content={TITLE} />
+        <meta property="og:description" content={DESCRIPTION} />
+        <meta property="og:image" content={OG_IMAGE} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta property="og:locale" content="el_GR" />
+        <meta property="og:site_name" content="ZOPRA" />
+
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={TITLE} />
+        <meta name="twitter:description" content={DESCRIPTION} />
+        <meta name="twitter:image" content={OG_IMAGE} />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(STRUCTURED_DATA) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(FAQ_STRUCTURED_DATA) }}
+        />
       </Head>
 
       {/* NAV */}

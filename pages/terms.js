@@ -1,6 +1,14 @@
+import Head from 'next/head';
+
 export default function Terms() {
   return (
     <div style={styles.page}>
+      <Head>
+        <title>Όροι Χρήσης | ZOPRA</title>
+        <meta name="description" content="Όροι και προϋποθέσεις χρήσης της εφαρμογής ZOPRA." />
+        <link rel="canonical" href="https://zopra.app/terms" />
+        <meta name="robots" content="index, follow" />
+      </Head>
       <div style={styles.content}>
         <h1 style={styles.title}>⚡ ZOPRA — Terms and Conditions</h1>
         <p style={styles.updated}>Last updated: 2026</p>

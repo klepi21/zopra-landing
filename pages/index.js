@@ -1,4 +1,4 @@
-const APP_STORE_URL = 'https://apps.apple.com/app/id0000000000'; // TODO: replace with real App Store ID once live
+const APP_STORE_URL = 'https://apps.apple.com/us/app/zopra-%CF%8C%CE%BD%CE%BF%CE%BC%CE%B1-%CE%B6%CF%8E%CE%BF-%CF%80%CF%81%CE%AC%CE%B3%CE%BC%CE%B1/id6771102888';
 
 export default function Home() {
   return (

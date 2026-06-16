@@ -1,45 +1,80 @@
+import Head from 'next/head';
+import styles from '../styles/Home.module.css';
+
 const APP_STORE_URL = 'https://apps.apple.com/us/app/zopra-%CF%8C%CE%BD%CE%BF%CE%BC%CE%B1-%CE%B6%CF%8E%CE%BF-%CF%80%CF%81%CE%AC%CE%B3%CE%BC%CE%B1/id6771102888';
+
+const FEATURES = [
+  { icon: '⚡', title: 'Real-time Multiplayer', desc: 'Παίξε live με φίλους, χωρίς καθυστερήσεις, σε πραγματικό χρόνο.' },
+  { icon: '👥', title: 'Έως 8 Παίκτες', desc: 'Δημιούργησε δωμάτιο και κάλεσε μέχρι 8 άτομα ταυτόχρονα.' },
+  { icon: '🌐', title: 'Δημόσια Παιχνίδια', desc: 'Μπες σε ανοιχτά δωμάτια και γνώρισε νέους παίκτες ανά τη χώρα.' },
+  { icon: '🏆', title: 'Παγκόσμια Κατάταξη', desc: 'Σύγκρινε το σκορ σου με όλους τους παίκτες του ZOPRA.' },
+  { icon: '⭐', title: 'Σύστημα Επιπέδων', desc: 'Ανέβα από Αρχάριος μέχρι Αθάνατος όσο μαζεύεις πόντους.' },
+  { icon: '🔔', title: 'Ειδοποιήσεις', desc: 'Μάθε αμέσως μόλις ανοίξει νέο δημόσιο παιχνίδι.' },
+];
+
+const FAQS = [
+  { q: 'Είναι δωρεάν το ZOPRA;', a: 'Ναι, το ZOPRA είναι 100% δωρεάν στο κατέβασμα και στην χρήση του.' },
+  { q: 'Πόσοι παίκτες μπορούν να παίξουν μαζί;', a: 'Μέχρι 8 παίκτες σε ένα δωμάτιο, ιδιωτικό ή δημόσιο.' },
+  { q: 'Χρειάζεται λογαριασμός;', a: 'Χρειάζεται μόνο ένα όνομα χρήστη — η εγγραφή παίρνει λιγότερο από ένα λεπτό.' },
+  { q: 'Υπάρχει έκδοση για Android;', a: 'Σύντομα! Αυτή τη στιγμή το ZOPRA είναι διαθέσιμο μόνο για iOS.' },
+];
 
 export default function Home() {
   return (
-    <div style={styles.page}>
+    <div className={styles.page}>
+      <Head>
+        <title>ZOPRA — Το ελληνικό παιχνίδι λέξεων</title>
+      </Head>
+
+      <div className={`${styles.blob} ${styles.blobTeal}`} />
+      <div className={`${styles.blob} ${styles.blobRed}`} />
+      <div className={`${styles.blob} ${styles.blobPurple}`} />
+
       {/* NAV */}
-      <nav style={styles.nav}>
-        <span style={styles.navLogo}>⚡ ZOPRA</span>
-        <a href={APP_STORE_URL} style={styles.navCta}>Κατέβασέ το</a>
+      <nav className={styles.nav}>
+        <span className={styles.navLogo}>⚡ ZOPRA</span>
+        <a href={APP_STORE_URL} className={styles.navCta}>Κατέβασέ το</a>
       </nav>
 
       {/* HERO */}
-      <section style={styles.hero}>
-        <div style={styles.heroText}>
-          <div style={styles.badge}>🇬🇷 Το πιο διασκεδαστικό ελληνικό multiplayer</div>
-          <h1 style={styles.heroTitle}>
+      <section className={styles.hero}>
+        <div className={styles.heroText}>
+          <div className={styles.badge}>🇬🇷 Το πιο διασκεδαστικό ελληνικό multiplayer</div>
+          <h1 className={styles.heroTitle}>
             Το παιχνίδι λέξεων<br />που έπαιζες ως παιδί.<br />
-            <span style={styles.heroTitleAccent}>Τώρα στο κινητό σου.</span>
+            <span className={styles.heroTitleAccent}>Τώρα στο κινητό σου.</span>
           </h1>
-          <p style={styles.heroSubtitle}>
+          <p className={styles.heroSubtitle}>
             Όνομα, Ζώο, Πράγμα — online, με φίλους, σε πραγματικό χρόνο.
             Ένα γράμμα, έξι κατηγορίες, 12 δευτερόλεπτα. Δωρεάν.
           </p>
-          <a href={APP_STORE_URL} style={styles.heroCta}>
+          <a href={APP_STORE_URL} className={styles.ctaBtn}>
             <AppleLogo /> Κατέβασέ το Δωρεάν
           </a>
-          <p style={styles.heroNote}>Διαθέσιμο για iOS · Χωρίς συνδρομή</p>
+          <p className={styles.heroNote}>Διαθέσιμο για iOS · Χωρίς συνδρομή</p>
         </div>
-        <div style={styles.heroImageWrap}>
-          <img src="/screenshots/screen1.png" alt="ZOPRA app intro" style={styles.heroImage} />
+        <div className={styles.heroImageWrap}>
+          <img src="/screenshots/screen1.png" alt="ZOPRA app intro" className={styles.phoneGlow} />
         </div>
       </section>
 
+      {/* STATS / TRUST BAR */}
+      <div className={styles.statsBar}>
+        <div className={styles.statChip}>🆓 100% Δωρεάν</div>
+        <div className={styles.statChip}>⚡ Real-time</div>
+        <div className={styles.statChip}>👥 Έως 8 Παίκτες</div>
+        <div className={styles.statChip}>🏆 Παγκόσμια Κατάταξη</div>
+      </div>
+
       {/* HOW IT WORKS */}
-      <section style={styles.sectionReverse}>
-        <div style={styles.sectionImageWrap}>
-          <img src="/screenshots/screen2.png" alt="Πώς παίζεται το ZOPRA" style={styles.sectionImage} />
+      <section className={styles.sectionReverse}>
+        <div className={styles.sectionImageWrap}>
+          <img src="/screenshots/screen2.png" alt="Πώς παίζεται το ZOPRA" className={styles.sectionImage} />
         </div>
-        <div style={styles.sectionText}>
-          <span style={styles.eyebrow}>ΠΩΣ ΠΑΙΖΕΤΑΙ</span>
-          <h2 style={styles.sectionTitle}>Ένα γράμμα. Έξι κατηγορίες. 12 δευτερόλεπτα.</h2>
-          <ul style={styles.checklist}>
+        <div className={styles.sectionText}>
+          <span className={styles.eyebrow}>ΠΩΣ ΠΑΙΖΕΤΑΙ</span>
+          <h2 className={styles.sectionTitle}>Ένα γράμμα. Έξι κατηγορίες. 12 δευτερόλεπτα.</h2>
+          <ul className={styles.checklist}>
             <li>⚡ <b>Αυτόματη επιλογή</b> — το γράμμα επιλέγεται τυχαία σε κάθε γύρο</li>
             <li>⏱️ <b>12 δευτερόλεπτα ανά κατηγορία</b> — σκέψου γρήγορα ή χάσε τον γύρο</li>
             <li>🏅 <b>Μοναδική απάντηση = 20 πόντοι</b> — όσο πιο πρωτότυπος, τόσο πιο ψηλά</li>
@@ -48,30 +83,30 @@ export default function Home() {
       </section>
 
       {/* PLAY WITH FRIENDS */}
-      <section style={styles.section}>
-        <div style={styles.sectionText}>
-          <span style={styles.eyebrow}>ΠΑΙΞΕ ΜΕ ΤΗΝ ΠΑΡΕΑ ΣΟΥ</span>
-          <h2 style={styles.sectionTitle}>Γράψε γρήγορα — ο χρόνος δεν περιμένει!</h2>
-          <p style={styles.sectionParagraph}>
+      <section className={styles.section}>
+        <div className={styles.sectionText}>
+          <span className={styles.eyebrow}>ΠΑΙΞΕ ΜΕ ΤΗΝ ΠΑΡΕΑ ΣΟΥ</span>
+          <h2 className={styles.sectionTitle}>Γράψε γρήγορα — ο χρόνος δεν περιμένει!</h2>
+          <p className={styles.sectionParagraph}>
             Δημιούργησε δωμάτιο, μοιράσου τον κωδικό με μια κίνηση, και παίξτε μέχρι 8 άτομα
             ταυτόχρονα. Ή μπες σε ένα από τα δημόσια παιχνίδια και γνώρισε νέους παίκτες.
           </p>
-          <a href={APP_STORE_URL} style={styles.inlineCta}>Δοκίμασέ το τώρα →</a>
+          <a href={APP_STORE_URL} className={styles.inlineCta}>Δοκίμασέ το τώρα →</a>
         </div>
-        <div style={styles.sectionImageWrap}>
-          <img src="/screenshots/screen3.png" alt="ZOPRA αρχική οθόνη" style={styles.sectionImage} />
+        <div className={styles.sectionImageWrap}>
+          <img src="/screenshots/screen3.png" alt="ZOPRA αρχική οθόνη" className={styles.sectionImage} />
         </div>
       </section>
 
       {/* LOBBY */}
-      <section style={styles.sectionReverse}>
-        <div style={styles.sectionImageWrap}>
-          <img src="/screenshots/screen4.png" alt="ZOPRA lobby με φίλους" style={styles.sectionImage} />
+      <section className={styles.sectionReverse}>
+        <div className={styles.sectionImageWrap}>
+          <img src="/screenshots/screen4.png" alt="ZOPRA lobby με φίλους" className={styles.sectionImage} />
         </div>
-        <div style={styles.sectionText}>
-          <span style={styles.eyebrow}>ΛΟΜΠΙ ΠΑΙΧΝΙΔΙΟΥ</span>
-          <h2 style={styles.sectionTitle}>Μοναδική απάντηση = 20 πόντοι. Ήσουν ο μόνος;</h2>
-          <p style={styles.sectionParagraph}>
+        <div className={styles.sectionText}>
+          <span className={styles.eyebrow}>ΛΟΜΠΙ ΠΑΙΧΝΙΔΙΟΥ</span>
+          <h2 className={styles.sectionTitle}>Μοναδική απάντηση = 20 πόντοι. Ήσουν ο μόνος;</h2>
+          <p className={styles.sectionParagraph}>
             Μέχρι 8 παίκτες σε ένα δωμάτιο, real-time ενημερώσεις, και ένα κλικ για να μοιραστείς
             τον κωδικό σε WhatsApp ή Instagram. Όλοι έτοιμοι, ένα κουμπί, ξεκινάμε.
           </p>
@@ -79,39 +114,67 @@ export default function Home() {
       </section>
 
       {/* LEADERBOARD */}
-      <section style={styles.section}>
-        <div style={styles.sectionText}>
-          <span style={styles.eyebrow}>ΠΑΓΚΟΣΜΙΑ ΚΑΤΑΤΑΞΗ</span>
-          <h2 style={styles.sectionTitle}>Ποιος είναι ο καλύτερος στην παρέα;</h2>
-          <p style={styles.sectionParagraph}>
+      <section className={styles.section}>
+        <div className={styles.sectionText}>
+          <span className={styles.eyebrow}>ΠΑΓΚΟΣΜΙΑ ΚΑΤΑΤΑΞΗ</span>
+          <h2 className={styles.sectionTitle}>Ποιος είναι ο καλύτερος στην παρέα;</h2>
+          <p className={styles.sectionParagraph}>
             Κάθε παιχνίδι μετράει. Ανέβα στην παγκόσμια κατάταξη, χτίσε το προφίλ σου, και
             απόδειξε ποιος ξέρει περισσότερες λέξεις από όλους.
           </p>
-          <a href={APP_STORE_URL} style={styles.inlineCta}>Μπες στην κατάταξη →</a>
+          <a href={APP_STORE_URL} className={styles.inlineCta}>Μπες στην κατάταξη →</a>
         </div>
-        <div style={styles.sectionImageWrap}>
-          <img src="/screenshots/screen5.png" alt="ZOPRA παγκόσμια κατάταξη" style={styles.sectionImage} />
+        <div className={styles.sectionImageWrap}>
+          <img src="/screenshots/screen5.png" alt="ZOPRA παγκόσμια κατάταξη" className={styles.sectionImage} />
         </div>
       </section>
 
+      {/* FEATURES GRID */}
+      <section className={styles.featuresSection}>
+        <div className={styles.featuresHeader}>
+          <span className={styles.eyebrow}>ΟΛΑ ΤΑ ΧΑΡΑΚΤΗΡΙΣΤΙΚΑ</span>
+          <h2 className={styles.sectionTitle}>Όλα όσα χρειάζεσαι για βραδιές με την παρέα</h2>
+        </div>
+        <div className={styles.featuresGrid}>
+          {FEATURES.map((f) => (
+            <div key={f.title} className={styles.featureCard}>
+              <span className={styles.featureIcon}>{f.icon}</span>
+              <div className={styles.featureTitle}>{f.title}</div>
+              <div className={styles.featureDesc}>{f.desc}</div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className={styles.faqSection}>
+        <h2 className={styles.faqTitle}>Συχνές Ερωτήσεις</h2>
+        {FAQS.map((item) => (
+          <details key={item.q} className={styles.faqItem}>
+            <summary>{item.q}</summary>
+            <div className={styles.faqAnswer}>{item.a}</div>
+          </details>
+        ))}
+      </section>
+
       {/* FINAL CTA */}
-      <section style={styles.finalCta}>
-        <h2 style={styles.finalCtaTitle}>Έτοιμος να παίξεις;</h2>
-        <p style={styles.finalCtaSubtitle}>
+      <section className={styles.finalCta}>
+        <h2 className={styles.finalCtaTitle}>Έτοιμος να παίξεις;</h2>
+        <p className={styles.finalCtaSubtitle}>
           Κατέβασέ το δωρεάν και ξεκίνα τον πρώτο σου γύρο σε λιγότερο από ένα λεπτό.
         </p>
-        <a href={APP_STORE_URL} style={styles.heroCta}>
+        <a href={APP_STORE_URL} className={styles.ctaBtn}>
           <AppleLogo /> Κατέβασέ το Δωρεάν
         </a>
       </section>
 
       {/* FOOTER */}
-      <footer style={styles.footer}>
+      <footer className={styles.footer}>
         <span>© {new Date().getFullYear()} Zopra</span>
-        <span style={styles.footerDivider}>·</span>
-        <a href="/privacy" style={styles.footerLink}>Privacy</a>
-        <span style={styles.footerDivider}>·</span>
-        <a href="/terms" style={styles.footerLink}>Terms</a>
+        <span className={styles.footerDivider}>·</span>
+        <a href="/privacy" className={styles.footerLink}>Privacy</a>
+        <span className={styles.footerDivider}>·</span>
+        <a href="/terms" className={styles.footerLink}>Terms</a>
       </footer>
     </div>
   );
@@ -124,203 +187,3 @@ function AppleLogo() {
     </svg>
   );
 }
-
-const styles = {
-  page: {
-    backgroundColor: '#0B0E17',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    color: '#FFFFFF',
-    overflowX: 'hidden',
-  },
-  nav: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '20px 24px',
-    maxWidth: 1100,
-    margin: '0 auto',
-  },
-  navLogo: {
-    fontSize: 20,
-    fontWeight: 900,
-    letterSpacing: 0.5,
-  },
-  navCta: {
-    backgroundColor: '#00C2A8',
-    color: '#0B0E17',
-    fontWeight: 800,
-    fontSize: 13,
-    padding: '10px 18px',
-    borderRadius: 12,
-    textDecoration: 'none',
-  },
-  hero: {
-    display: 'flex',
-    flexWrap: 'wrap-reverse',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 40,
-    maxWidth: 1100,
-    margin: '0 auto',
-    padding: '40px 24px 80px',
-  },
-  heroText: {
-    flex: '1 1 420px',
-    minWidth: 300,
-    maxWidth: 480,
-  },
-  badge: {
-    display: 'inline-block',
-    backgroundColor: 'rgba(0, 194, 168, 0.12)',
-    border: '1px solid rgba(0, 194, 168, 0.3)',
-    color: '#00C2A8',
-    fontSize: 13,
-    fontWeight: 700,
-    padding: '6px 14px',
-    borderRadius: 20,
-    marginBottom: 20,
-  },
-  heroTitle: {
-    fontSize: 40,
-    fontWeight: 900,
-    lineHeight: 1.15,
-    marginBottom: 16,
-  },
-  heroTitleAccent: {
-    color: '#00C2A8',
-  },
-  heroSubtitle: {
-    fontSize: 17,
-    color: '#A0AEC0',
-    lineHeight: 1.6,
-    marginBottom: 28,
-  },
-  heroCta: {
-    display: 'inline-flex',
-    alignItems: 'center',
-    backgroundColor: '#FF4D4D',
-    color: '#FFFFFF',
-    fontWeight: 900,
-    fontSize: 16,
-    padding: '16px 28px',
-    borderRadius: 16,
-    textDecoration: 'none',
-    boxShadow: '0 8px 24px rgba(255, 77, 77, 0.35)',
-  },
-  heroNote: {
-    color: '#55627E',
-    fontSize: 13,
-    marginTop: 14,
-  },
-  heroImageWrap: {
-    flex: '1 1 280px',
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  heroImage: {
-    width: '100%',
-    maxWidth: 300,
-    borderRadius: 24,
-  },
-  section: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 50,
-    maxWidth: 1100,
-    margin: '0 auto',
-    padding: '60px 24px',
-  },
-  sectionReverse: {
-    display: 'flex',
-    flexWrap: 'wrap-reverse',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 50,
-    maxWidth: 1100,
-    margin: '0 auto',
-    padding: '60px 24px',
-  },
-  sectionText: {
-    flex: '1 1 380px',
-    minWidth: 280,
-    maxWidth: 460,
-  },
-  eyebrow: {
-    color: '#00C2A8',
-    fontSize: 12,
-    fontWeight: 800,
-    letterSpacing: 1.5,
-  },
-  sectionTitle: {
-    fontSize: 28,
-    fontWeight: 900,
-    lineHeight: 1.25,
-    margin: '10px 0 18px',
-  },
-  sectionParagraph: {
-    color: '#A0AEC0',
-    fontSize: 15,
-    lineHeight: 1.7,
-    marginBottom: 20,
-  },
-  checklist: {
-    listStyle: 'none',
-    padding: 0,
-    color: '#D1D9E6',
-    fontSize: 15,
-    lineHeight: 2,
-  },
-  inlineCta: {
-    color: '#00C2A8',
-    fontWeight: 800,
-    fontSize: 15,
-    textDecoration: 'none',
-  },
-  sectionImageWrap: {
-    flex: '1 1 240px',
-    display: 'flex',
-    justifyContent: 'center',
-  },
-  sectionImage: {
-    width: '100%',
-    maxWidth: 260,
-    borderRadius: 20,
-  },
-  finalCta: {
-    textAlign: 'center',
-    padding: '90px 24px',
-    background: 'linear-gradient(180deg, rgba(0,194,168,0.08), transparent)',
-  },
-  finalCtaTitle: {
-    fontSize: 32,
-    fontWeight: 900,
-    marginBottom: 12,
-  },
-  finalCtaSubtitle: {
-    color: '#A0AEC0',
-    fontSize: 16,
-    marginBottom: 28,
-    maxWidth: 420,
-    marginLeft: 'auto',
-    marginRight: 'auto',
-  },
-  footer: {
-    textAlign: 'center',
-    padding: '32px 24px 48px',
-    color: '#55627E',
-    fontSize: 12,
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 8,
-  },
-  footerDivider: {
-    color: '#2A3145',
-  },
-  footerLink: {
-    color: '#55627E',
-    textDecoration: 'underline',
-  },
-};

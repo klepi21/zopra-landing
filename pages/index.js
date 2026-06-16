@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import { useRef } from 'react';
 import styles from '../styles/Home.module.css';
 
 const APP_STORE_URL = 'https://apps.apple.com/us/app/zopra-%CF%8C%CE%BD%CE%BF%CE%BC%CE%B1-%CE%B6%CF%8E%CE%BF-%CF%80%CF%81%CE%AC%CE%B3%CE%BC%CE%B1/id6771102888';
@@ -12,160 +13,183 @@ const FEATURES = [
   { icon: '🔔', title: 'Ειδοποιήσεις', desc: 'Μάθε αμέσως μόλις ανοίξει νέο δημόσιο παιχνίδι.' },
 ];
 
-const FAQS = [
-  { q: 'Είναι δωρεάν το ZOPRA;', a: 'Ναι, το ZOPRA είναι 100% δωρεάν στο κατέβασμα και στην χρήση του.' },
-  { q: 'Πόσοι παίκτες μπορούν να παίξουν μαζί;', a: 'Μέχρι 8 παίκτες σε ένα δωμάτιο, ιδιωτικό ή δημόσιο.' },
-  { q: 'Χρειάζεται λογαριασμός;', a: 'Χρειάζεται μόνο ένα όνομα χρήστη — η εγγραφή παίρνει λιγότερο από ένα λεπτό.' },
-  { q: 'Υπάρχει έκδοση για Android;', a: 'Σύντομα! Αυτή τη στιγμή το ZOPRA είναι διαθέσιμο μόνο για iOS.' },
-];
+// Generates an N-pointed star polygon for the decorative bursts
+function starPoints(spikes, outerR, innerR, cx, cy) {
+  const pts = [];
+  const step = Math.PI / spikes;
+  let rot = -Math.PI / 2;
+  for (let i = 0; i < spikes; i++) {
+    pts.push(`${(cx + Math.cos(rot) * outerR).toFixed(1)},${(cy + Math.sin(rot) * outerR).toFixed(1)}`);
+    rot += step;
+    pts.push(`${(cx + Math.cos(rot) * innerR).toFixed(1)},${(cy + Math.sin(rot) * innerR).toFixed(1)}`);
+    rot += step;
+  }
+  return pts.join(' ');
+}
+const STAR_PTS = starPoints(9, 50, 20, 50, 50);
+
+function Starburst({ size = 120, color = '#00C2A8', style }) {
+  return (
+    <svg
+      className={styles.starburst}
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      style={style}
+    >
+      <polygon points={STAR_PTS} fill={color} opacity="0.55" />
+    </svg>
+  );
+}
+
+function DiagonalLines() {
+  return (
+    <svg className={styles.linesWrap} preserveAspectRatio="none">
+      <line x1="0%" y1="20%" x2="40%" y2="0%" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+      <line x1="60%" y1="100%" x2="100%" y2="60%" stroke="rgba(255,255,255,0.08)" strokeWidth="1" />
+      <line x1="10%" y1="100%" x2="50%" y2="55%" stroke="rgba(255,255,255,0.06)" strokeWidth="1" />
+    </svg>
+  );
+}
 
 export default function Home() {
+  const trackRef = useRef(null);
+
+  const scrollCarousel = (dir) => {
+    if (trackRef.current) {
+      trackRef.current.scrollBy({ left: dir * 300, behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className={styles.page}>
       <Head>
         <title>ZOPRA — Το ελληνικό παιχνίδι λέξεων</title>
       </Head>
 
-      <div className={`${styles.blob} ${styles.blobTeal}`} />
-      <div className={`${styles.blob} ${styles.blobRed}`} />
-      <div className={`${styles.blob} ${styles.blobPurple}`} />
-
       {/* NAV */}
       <nav className={styles.nav}>
-        <span className={styles.navLogo}>⚡ ZOPRA</span>
+        <div className={styles.navBrand}>
+          <img src="/zopra-icon.png" alt="ZOPRA" className={styles.navIcon} />
+          <span className={styles.navLogo}>ZOPRA</span>
+        </div>
+        <div className={styles.navLinks}>
+          <a href="#about">Σχετικά</a>
+          <a href="#features">Χαρακτηριστικά</a>
+          <a href="#faq">FAQ</a>
+        </div>
         <a href={APP_STORE_URL} className={styles.navCta}>Κατέβασέ το</a>
       </nav>
 
       {/* HERO */}
       <section className={styles.hero}>
+        <DiagonalLines />
+        <Starburst size={140} color="#00C2A8" style={{ top: 20, right: 40 }} />
+
         <div className={styles.heroText}>
-          <div className={styles.badge}>🇬🇷 Το πιο διασκεδαστικό ελληνικό multiplayer</div>
-          <h1 className={styles.heroTitle}>
-            Το παιχνίδι λέξεων<br />που έπαιζες ως παιδί.<br />
-            <span className={styles.heroTitleAccent}>Τώρα στο κινητό σου.</span>
+          <span className={styles.eyebrow}>Το ελληνικό παιχνίδι λέξεων</span>
+          <h1 className={`${styles.heroTitle} ${styles.headlineFont}`}>
+            Εύκολος τρόπος<br />να δείξεις<br />
+            <span className={styles.heroTitleAccent}>ποιος ξέρει λέξεις</span>
           </h1>
           <p className={styles.heroSubtitle}>
             Όνομα, Ζώο, Πράγμα — online, με φίλους, σε πραγματικό χρόνο.
-            Ένα γράμμα, έξι κατηγορίες, 12 δευτερόλεπτα. Δωρεάν.
+            Ένα γράμμα, έξι κατηγορίες, 12 δευτερόλεπτα.
           </p>
-          <a href={APP_STORE_URL} className={styles.ctaBtn}>
-            <AppleLogo /> Κατέβασέ το Δωρεάν
+
+          <a href={APP_STORE_URL} className={styles.storeBadge}>
+            <AppleLogo size={26} />
+            <span className={styles.storeBadgeText}>
+              <span className={styles.storeBadgeSmall}>Διαθέσιμο στο</span>
+              <span className={styles.storeBadgeBig}>App Store</span>
+            </span>
           </a>
-          <p className={styles.heroNote}>Διαθέσιμο για iOS · Χωρίς συνδρομή</p>
+
+          <div className={styles.heroProof}>
+            <div className={styles.avatarStack}>
+              <span className={styles.avatarChip} style={{ background: '#FF4D4D' }}>🦉</span>
+              <span className={styles.avatarChip} style={{ background: '#00C2A8' }}>⚡</span>
+              <span className={styles.avatarChip} style={{ background: '#7C3AED' }}>🛡️</span>
+            </div>
+            <span className={styles.proofText}>
+              <span className={styles.proofTextBold}>100% Δωρεάν</span><br />Χωρίς συνδρομή
+            </span>
+          </div>
         </div>
+
         <div className={styles.heroImageWrap}>
           <img src="/screenshots/screen1.png" alt="ZOPRA app intro" className={styles.phoneGlow} />
         </div>
       </section>
 
-      {/* STATS / TRUST BAR */}
-      <div className={styles.statsBar}>
-        <div className={styles.statChip}>🆓 100% Δωρεάν</div>
-        <div className={styles.statChip}>⚡ Real-time</div>
-        <div className={styles.statChip}>👥 Έως 8 Παίκτες</div>
-        <div className={styles.statChip}>🏆 Παγκόσμια Κατάταξη</div>
-      </div>
-
-      {/* HOW IT WORKS */}
-      <section className={styles.sectionReverse}>
-        <div className={styles.sectionImageWrap}>
-          <img src="/screenshots/screen2.png" alt="Πώς παίζεται το ZOPRA" className={styles.sectionImage} />
+      {/* ABOUT / TWO PHONE SHOWCASE */}
+      <section className={styles.aboutSection} id="about">
+        <div className={styles.aboutCard}>
+          <Starburst size={90} color="#7C3AED" style={{ top: -20, left: -10 }} />
+          <img src="/screenshots/screen3.png" alt="ZOPRA αρχική οθόνη" className={styles.aboutPhoneBack} />
+          <img src="/screenshots/screen2.png" alt="Πώς παίζεται" className={styles.aboutPhoneFront} />
         </div>
-        <div className={styles.sectionText}>
-          <span className={styles.eyebrow}>ΠΩΣ ΠΑΙΖΕΤΑΙ</span>
-          <h2 className={styles.sectionTitle}>Ένα γράμμα. Έξι κατηγορίες. 12 δευτερόλεπτα.</h2>
-          <ul className={styles.checklist}>
-            <li>⚡ <b>Αυτόματη επιλογή</b> — το γράμμα επιλέγεται τυχαία σε κάθε γύρο</li>
-            <li>⏱️ <b>12 δευτερόλεπτα ανά κατηγορία</b> — σκέψου γρήγορα ή χάσε τον γύρο</li>
-            <li>🏅 <b>Μοναδική απάντηση = 20 πόντοι</b> — όσο πιο πρωτότυπος, τόσο πιο ψηλά</li>
-          </ul>
-        </div>
-      </section>
-
-      {/* PLAY WITH FRIENDS */}
-      <section className={styles.section}>
-        <div className={styles.sectionText}>
-          <span className={styles.eyebrow}>ΠΑΙΞΕ ΜΕ ΤΗΝ ΠΑΡΕΑ ΣΟΥ</span>
-          <h2 className={styles.sectionTitle}>Γράψε γρήγορα — ο χρόνος δεν περιμένει!</h2>
-          <p className={styles.sectionParagraph}>
-            Δημιούργησε δωμάτιο, μοιράσου τον κωδικό με μια κίνηση, και παίξτε μέχρι 8 άτομα
-            ταυτόχρονα. Ή μπες σε ένα από τα δημόσια παιχνίδια και γνώρισε νέους παίκτες.
+        <div className={styles.aboutText}>
+          <span className={styles.eyebrow}>Σχετικά με το παιχνίδι</span>
+          <h2 className={`${styles.aboutTitle} ${styles.headlineFont}`}>
+            Γράψε γρήγορα, σκέψου πρωτότυπα
+          </h2>
+          <p className={styles.aboutParagraph}>
+            Σε κάθε γύρο, ένα γράμμα επιλέγεται τυχαία και έχεις 12 δευτερόλεπτα να γράψεις
+            μια λέξη για κάθε κατηγορία. Όσο πιο μοναδική η απάντησή σου, τόσο περισσότεροι
+            πόντοι. Μετά, όλοι ψηφίζουν ποιες απαντήσεις μετράνε.
           </p>
-          <a href={APP_STORE_URL} className={styles.inlineCta}>Δοκίμασέ το τώρα →</a>
-        </div>
-        <div className={styles.sectionImageWrap}>
-          <img src="/screenshots/screen3.png" alt="ZOPRA αρχική οθόνη" className={styles.sectionImage} />
+          <a href={APP_STORE_URL} className={styles.pillBtn}>Δοκίμασέ το Δωρεάν</a>
         </div>
       </section>
 
-      {/* LOBBY */}
-      <section className={styles.sectionReverse}>
-        <div className={styles.sectionImageWrap}>
-          <img src="/screenshots/screen4.png" alt="ZOPRA lobby με φίλους" className={styles.sectionImage} />
-        </div>
-        <div className={styles.sectionText}>
-          <span className={styles.eyebrow}>ΛΟΜΠΙ ΠΑΙΧΝΙΔΙΟΥ</span>
-          <h2 className={styles.sectionTitle}>Μοναδική απάντηση = 20 πόντοι. Ήσουν ο μόνος;</h2>
-          <p className={styles.sectionParagraph}>
-            Μέχρι 8 παίκτες σε ένα δωμάτιο, real-time ενημερώσεις, και ένα κλικ για να μοιραστείς
-            τον κωδικό σε WhatsApp ή Instagram. Όλοι έτοιμοι, ένα κουμπί, ξεκινάμε.
-          </p>
-        </div>
-      </section>
-
-      {/* LEADERBOARD */}
-      <section className={styles.section}>
-        <div className={styles.sectionText}>
-          <span className={styles.eyebrow}>ΠΑΓΚΟΣΜΙΑ ΚΑΤΑΤΑΞΗ</span>
-          <h2 className={styles.sectionTitle}>Ποιος είναι ο καλύτερος στην παρέα;</h2>
-          <p className={styles.sectionParagraph}>
-            Κάθε παιχνίδι μετράει. Ανέβα στην παγκόσμια κατάταξη, χτίσε το προφίλ σου, και
-            απόδειξε ποιος ξέρει περισσότερες λέξεις από όλους.
-          </p>
-          <a href={APP_STORE_URL} className={styles.inlineCta}>Μπες στην κατάταξη →</a>
-        </div>
-        <div className={styles.sectionImageWrap}>
-          <img src="/screenshots/screen5.png" alt="ZOPRA παγκόσμια κατάταξη" className={styles.sectionImage} />
-        </div>
-      </section>
-
-      {/* FEATURES GRID */}
-      <section className={styles.featuresSection}>
-        <div className={styles.featuresHeader}>
-          <span className={styles.eyebrow}>ΟΛΑ ΤΑ ΧΑΡΑΚΤΗΡΙΣΤΙΚΑ</span>
-          <h2 className={styles.sectionTitle}>Όλα όσα χρειάζεσαι για βραδιές με την παρέα</h2>
-        </div>
-        <div className={styles.featuresGrid}>
-          {FEATURES.map((f) => (
-            <div key={f.title} className={styles.featureCard}>
-              <span className={styles.featureIcon}>{f.icon}</span>
-              <div className={styles.featureTitle}>{f.title}</div>
-              <div className={styles.featureDesc}>{f.desc}</div>
+      {/* FEATURES — light contrast section */}
+      <section className={styles.featuresSection} id="features">
+        <div className={styles.featuresInner}>
+          <Starburst size={100} color="#7C3AED" style={{ top: -10, right: 20 }} />
+          <div className={styles.featuresHeaderRow}>
+            <div>
+              <span className={styles.eyebrow}>Χαρακτηριστικά</span>
+              <h2 className={`${styles.featuresTitle} ${styles.headlineFont}`}>
+                Όλα όσα χρειάζεσαι για βραδιές με την παρέα
+              </h2>
             </div>
-          ))}
-        </div>
-      </section>
+            <div className={styles.carouselNav}>
+              <button className={styles.navArrow} onClick={() => scrollCarousel(-1)} aria-label="Πίσω">←</button>
+              <button className={`${styles.navArrow} ${styles.navArrowDark}`} onClick={() => scrollCarousel(1)} aria-label="Μπροστά">→</button>
+            </div>
+          </div>
 
-      {/* FAQ */}
-      <section className={styles.faqSection}>
-        <h2 className={styles.faqTitle}>Συχνές Ερωτήσεις</h2>
-        {FAQS.map((item) => (
-          <details key={item.q} className={styles.faqItem}>
-            <summary>{item.q}</summary>
-            <div className={styles.faqAnswer}>{item.a}</div>
-          </details>
-        ))}
+          <div className={styles.carouselTrack} ref={trackRef}>
+            {FEATURES.map((f) => (
+              <div key={f.title} className={styles.featureCard}>
+                <span className={styles.featureIcon}>{f.icon}</span>
+                <div className={styles.featureCardTitle}>{f.title}</div>
+                <div className={styles.featureCardDesc}>{f.desc}</div>
+              </div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* FINAL CTA */}
       <section className={styles.finalCta}>
-        <h2 className={styles.finalCtaTitle}>Έτοιμος να παίξεις;</h2>
+        <DiagonalLines />
+        <h2 className={`${styles.finalCtaTitle} ${styles.headlineFont}`}>
+          Ξεκίνα τον πρώτο σου<br />γύρο σε ένα κλικ
+        </h2>
         <p className={styles.finalCtaSubtitle}>
-          Κατέβασέ το δωρεάν και ξεκίνα τον πρώτο σου γύρο σε λιγότερο από ένα λεπτό.
+          Κατέβασέ το δωρεάν, διάλεξε ένα όνομα χρήστη, και είσαι έτοιμος να παίξεις
+          με την παρέα σου σε λιγότερο από ένα λεπτό.
         </p>
-        <a href={APP_STORE_URL} className={styles.ctaBtn}>
-          <AppleLogo /> Κατέβασέ το Δωρεάν
-        </a>
+        <a href={APP_STORE_URL} className={styles.pillBtn}>Κατέβασέ το Δωρεάν</a>
+
+        <div className={styles.fannedPhones}>
+          <Starburst size={70} color="#FFFFFF" style={{ position: 'absolute', left: '18%', top: 0 }} />
+          <img src="/screenshots/screen4.png" alt="ZOPRA lobby" className={`${styles.fannedPhone} ${styles.fannedPhoneLeft}`} />
+          <img src="/screenshots/screen3.png" alt="ZOPRA αρχική οθόνη" className={`${styles.fannedPhone} ${styles.fannedPhoneCenter}`} />
+          <img src="/screenshots/screen5.png" alt="ZOPRA κατάταξη" className={`${styles.fannedPhone} ${styles.fannedPhoneRight}`} />
+        </div>
       </section>
 
       {/* FOOTER */}
@@ -180,9 +204,9 @@ export default function Home() {
   );
 }
 
-function AppleLogo() {
+function AppleLogo({ size = 20 }) {
   return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 8 }}>
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
       <path d="M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.014-.07-.034-.22-.034-.37 0-1.13.555-2.27 1.187-2.98.744-.85 2.05-1.5 3.06-1.54.014.1.03.24.03.27zm4.49 16.66c-.03.07-.45 1.55-1.49 3.06-.97 1.4-1.97 2.79-3.53 2.82-1.51.03-2-.88-3.73-.88-1.73 0-2.27.85-3.7.91-1.49.05-2.62-1.5-3.6-2.9-2-2.86-3.5-8.08-1.47-11.6.99-1.75 2.78-2.86 4.7-2.89 1.47-.03 2.4.95 3.62.95 1.21 0 1.93-.95 3.65-.95.97 0 2.97.09 4.27 2.13-.11.07-2.55 1.49-2.52 4.45.03 3.53 3.1 4.7 3.13 4.71-.02.08-.49 1.7-1.61 3.18z"/>
     </svg>
   );

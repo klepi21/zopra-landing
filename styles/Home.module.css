@@ -30,6 +30,7 @@
 .phoneFrame img {
   display: block;
   width: 100%;
+  height: auto;
   border-radius: 24px;
 }
 .phoneFrameNotch {
@@ -226,6 +227,7 @@
   flex: 1 1 300px;
   display: flex;
   justify-content: center;
+  align-items: center;
   position: relative;
 }
 .phoneGlow {
@@ -263,6 +265,7 @@
   border-radius: 28px;
   padding: 40px;
   display: flex;
+  align-items: center;
   justify-content: center;
   gap: 18px;
   overflow: hidden;

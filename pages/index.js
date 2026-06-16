@@ -6,7 +6,13 @@ export default function Home() {
         <p style={styles.subtitle}>Όνομα, Ζώο, Πράγμα — το αγαπημένο παιχνίδι λέξεων, τώρα στο κινητό σου.</p>
         <p style={styles.tagline}>Παίξε με φίλους, σε πραγματικό χρόνο.</p>
       </div>
-      <footer style={styles.footer}>© {new Date().getFullYear()} Zopra</footer>
+      <footer style={styles.footer}>
+        <span>© {new Date().getFullYear()} Zopra</span>
+        <span style={styles.footerDivider}>·</span>
+        <a href="/privacy" style={styles.footerLink}>Privacy</a>
+        <span style={styles.footerDivider}>·</span>
+        <a href="/terms" style={styles.footerLink}>Terms</a>
+      </footer>
     </div>
   );
 }
@@ -50,5 +56,15 @@ const styles = {
     bottom: 24,
     color: '#55627E',
     fontSize: 12,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 8,
+  },
+  footerDivider: {
+    color: '#2A3145',
+  },
+  footerLink: {
+    color: '#55627E',
+    textDecoration: 'underline',
   },
 };

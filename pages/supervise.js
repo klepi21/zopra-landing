@@ -37,10 +37,11 @@ function StatCard({ label, value, color = '#00C2A8', icon, sub }) {
 }
 
 // Simple SVG bar chart for daily activity
-function ActivityChart({ data }) {
+function ActivityChart({ data, color = '#00C2A8', unit = 'game' }) {
   if (!data || data.length === 0) return <div style={{ color: '#55627E', fontSize: 13, padding: 16 }}>No data yet.</div>;
   const max = Math.max(...data.map(d => d.count), 1);
   const W = 560, H = 80, barW = Math.floor((W - data.length * 4) / data.length);
+  const dimColor = color + '33';
   return (
     <div style={{ overflowX: 'auto' }}>
       <svg viewBox={`0 0 ${W} ${H + 24}`} style={{ width: '100%', maxWidth: W }}>
@@ -51,8 +52,8 @@ function ActivityChart({ data }) {
           const isToday = i === data.length - 1;
           return (
             <g key={d.day}>
-              <rect x={x} y={y} width={barW} height={barH} rx={3} fill={isToday ? '#00C2A8' : '#1E3A4A'} />
-              <title>{d.day}: {d.count} game{d.count !== 1 ? 's' : ''}</title>
+              <rect x={x} y={y} width={barW} height={barH} rx={3} fill={isToday ? color : dimColor} />
+              <title>{d.day}: {d.count} {unit}{d.count !== 1 ? 's' : ''}</title>
             </g>
           );
         })}
@@ -162,11 +163,15 @@ export default function AdminDashboard({ users, stats, gameAnalytics }) {
 
           {/* ── User Stats ────────────────────────────────────────────── */}
           <div style={sectionLabel}>👥 Users</div>
-          <div style={{ display: 'flex', gap: 16, marginBottom: 40, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
             <StatCard icon="👥" label="Total Users" value={stats.totalUsers} color="#FFFFFF" />
             <StatCard icon="📅" label="New Today" value={stats.newToday} color="#00C2A8" />
             <StatCard icon="📆" label="New This Week" value={stats.newWeek} color="#00C2A8" />
             <StatCard icon="🔔" label="Push Subscribers" value={stats.pushEnabled} sub={`${Math.round(stats.pushEnabled / Math.max(stats.totalUsers, 1) * 100)}% opt-in rate`} color="#48BB78" />
+          </div>
+          <div style={{ ...card, marginBottom: 40 }}>
+            <div style={cardTitle}>📈 New Registrations (last 14 days)</div>
+            <ActivityChart data={stats.dailyUsers} color="#C084FC" />
           </div>
 
           {/* ── Game Analytics ────────────────────────────────────────── */}
@@ -185,7 +190,7 @@ export default function AdminDashboard({ users, stats, gameAnalytics }) {
             {/* Daily activity chart */}
             <div style={card}>
               <div style={cardTitle}>📈 Games per Day (last 14 days)</div>
-              <ActivityChart data={ga.dailyGames} />
+              <ActivityChart data={ga.dailyGames} color="#00C2A8" unit="game" />
             </div>
 
             {/* Letter popularity */}
@@ -433,11 +438,26 @@ export async function getServerSideProps(context) {
   ]);
 
   // ── User stats ────────────────────────────────────────────────────────────
+  // Build new-users-per-day from the already-fetched users array (no extra query)
+  const userDayMap = {};
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+    userDayMap[d.toISOString().slice(0, 10)] = 0;
+  }
+  (users || []).forEach(u => {
+    if (u.created_at) {
+      const key = u.created_at.slice(0, 10);
+      if (key in userDayMap) userDayMap[key]++;
+    }
+  });
+  const dailyUsers = Object.entries(userDayMap).map(([day, count]) => ({ day, count }));
+
   const stats = {
     totalUsers: users.length,
     newToday: users.filter(u => u.created_at >= todayStr).length,
     newWeek: users.filter(u => u.created_at >= weekAgoStr).length,
     pushEnabled: users.filter(u => u.notifications_enabled && u.push_token).length,
+    dailyUsers,
   };
 
   // ── Daily games chart (last 14 days) ──────────────────────────────────────

@@ -85,11 +85,10 @@ export default function AdminDashboard({ users, stats }) {
     return list;
   }, [users, search, filter]);
 
-  // Recipients preview count
+  // Recipients preview count — always reflects actual push-capable users
   const recipientCount = useMemo(() => {
     if (recipients === 'selected') return selectedIds.size;
-    if (recipients === 'push') return stats.pushEnabled;
-    return stats.totalUsers;
+    return stats.pushEnabled; // only push-enabled users can receive notifications
   }, [recipients, selectedIds, stats]);
 
   const toggleSelect = (id) => {
@@ -269,8 +268,7 @@ export default function AdminDashboard({ users, stats }) {
                 <label style={labelStyle}>Recipients</label>
                 <div style={{ display: 'flex', gap: 8 }}>
                   {[
-                    { key: 'push', label: `Push-Enabled (${stats.pushEnabled})` },
-                    { key: 'all', label: `All Users (${stats.totalUsers})` },
+                    { key: 'push', label: `All Push-Enabled (${stats.pushEnabled})` },
                     { key: 'selected', label: `Selected (${selectedIds.size})` },
                   ].map(r => (
                     <button key={r.key} onClick={() => setRecipients(r.key)} style={{

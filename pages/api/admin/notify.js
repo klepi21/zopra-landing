@@ -33,10 +33,10 @@ export default async function handler(req, res) {
   let query = supabase.from('users').select('id, push_token, notifications_enabled');
 
   if (recipients === 'selected' && Array.isArray(userIds) && userIds.length > 0) {
-    // Specific users — still require they have a valid push token
-    query = query.in('id', userIds);
+    // Hand-picked users — filter to those with a valid push token
+    query = query.in('id', userIds).eq('notifications_enabled', true);
   } else {
-    // Both 'push' and 'all' modes only send to users who have notifications enabled
+    // Default: everyone who has opted in to push notifications
     query = query.eq('notifications_enabled', true);
   }
 

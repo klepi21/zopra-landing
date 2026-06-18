@@ -38,32 +38,54 @@ function StatCard({ label, value, color = '#00C2A8', icon, sub }) {
 
 // Simple SVG bar chart for daily activity
 function ActivityChart({ data, color = '#00C2A8', unit = 'game' }) {
+  const [hovered, setHovered] = useState(null);
   if (!data || data.length === 0) return <div style={{ color: '#55627E', fontSize: 13, padding: 16 }}>No data yet.</div>;
   const max = Math.max(...data.map(d => d.count), 1);
-  const W = 560, H = 80, barW = Math.floor((W - data.length * 4) / data.length);
+  // TT_H = space reserved above bars for the tooltip bubble
+  const W = 560, H = 80, TT_H = 44, barW = Math.floor((W - data.length * 4) / data.length);
   const dimColor = color + '33';
   return (
     <div style={{ overflowX: 'auto' }}>
-      <svg viewBox={`0 0 ${W} ${H + 24}`} style={{ width: '100%', maxWidth: W }}>
+      <svg viewBox={`0 0 ${W} ${TT_H + H + 24}`} style={{ width: '100%', maxWidth: W }}>
         {data.map((d, i) => {
           const barH = Math.max(4, Math.round((d.count / max) * H));
           const x = i * (barW + 4);
-          const y = H - barH;
+          const barY = TT_H + H - barH;
           const isToday = i === data.length - 1;
+          const isHov = hovered === i;
+          // Tooltip box: centered above bar, clamped to SVG edges
+          const ttW = 86, ttH = 36, cx = x + barW / 2;
+          const ttX = Math.max(0, Math.min(cx - ttW / 2, W - ttW));
+          const ttY = TT_H - ttH - 4;
+          const dateLabel = new Date(d.day + 'T12:00:00').toLocaleDateString('el-GR', { day: 'numeric', month: 'short' });
           return (
-            <g key={d.day}>
-              <rect x={x} y={y} width={barW} height={barH} rx={3} fill={isToday ? color : dimColor} />
-              <title>{d.day}: {d.count} {unit}{d.count !== 1 ? 's' : ''}</title>
+            <g key={d.day} onMouseEnter={() => setHovered(i)} onMouseLeave={() => setHovered(null)} style={{ cursor: 'default' }}>
+              {/* Full-height invisible hit area so hover works on empty space above short bars */}
+              <rect x={x} y={TT_H} width={barW} height={H} fill="transparent" />
+              {/* The bar itself */}
+              <rect x={x} y={barY} width={barW} height={barH} rx={3} fill={isHov || isToday ? color : dimColor} />
+              {/* Tooltip — only rendered for the hovered bar */}
+              {isHov && (
+                <g>
+                  <rect x={ttX} y={ttY} width={ttW} height={ttH} rx={6} fill="#1A1D2E" stroke={color} strokeWidth={1.2} />
+                  <text x={ttX + ttW / 2} y={ttY + 14} textAnchor="middle" fontSize={12} fontWeight="800" fill={color}>
+                    {d.count} {unit}{d.count !== 1 ? 's' : ''}
+                  </text>
+                  <text x={ttX + ttW / 2} y={ttY + 28} textAnchor="middle" fontSize={10} fill="#A0AEC0">
+                    {dateLabel}
+                  </text>
+                </g>
+              )}
             </g>
           );
         })}
-        {/* x-axis labels — only first, middle, last */}
+        {/* x-axis labels — first, middle, last */}
         {[0, Math.floor(data.length / 2), data.length - 1].map(i => {
           const d = data[i];
           if (!d) return null;
           const x = i * (barW + 4) + barW / 2;
           const label = new Date(d.day + 'T12:00:00').toLocaleDateString('el-GR', { day: 'numeric', month: 'short' });
-          return <text key={i} x={x} y={H + 18} textAnchor="middle" fontSize={10} fill="#55627E">{label}</text>;
+          return <text key={i} x={x} y={TT_H + H + 18} textAnchor="middle" fontSize={10} fill="#55627E">{label}</text>;
         })}
       </svg>
     </div>
@@ -171,7 +193,7 @@ export default function AdminDashboard({ users, stats, gameAnalytics }) {
           </div>
           <div style={{ ...card, marginBottom: 40 }}>
             <div style={cardTitle}>📈 New Registrations (last 14 days)</div>
-            <ActivityChart data={stats.dailyUsers} color="#C084FC" />
+            <ActivityChart data={stats.dailyUsers} color="#C084FC" unit="user" />
           </div>
 
           {/* ── Game Analytics ────────────────────────────────────────── */}

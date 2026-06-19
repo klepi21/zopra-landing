@@ -116,12 +116,15 @@ export default function AdminDashboard({ users, stats, gameAnalytics }) {
 
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  const [page, setPage] = useState(0);
   const [notifTitle, setNotifTitle] = useState('');
   const [notifBody, setNotifBody] = useState('');
   const [recipients, setRecipients] = useState('push');
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState(null);
+
+  const PAGE_SIZE = 20;
 
   const filtered = useMemo(() => {
     let list = users;
@@ -132,6 +135,14 @@ export default function AdminDashboard({ users, stats, gameAnalytics }) {
     }
     return list;
   }, [users, search, filter]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const safePage = Math.min(page, totalPages - 1);
+  const paginated = filtered.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE);
+
+  // Reset to page 0 when search or filter changes
+  const handleSearch = (val) => { setSearch(val); setPage(0); };
+  const handleFilter = (val) => { setFilter(val); setPage(0); };
 
   const recipientCount = useMemo(() => {
     if (recipients === 'selected') return selectedIds.size;
@@ -272,10 +283,10 @@ export default function AdminDashboard({ users, stats, gameAnalytics }) {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
               <h2 style={{ margin: 0, fontSize: 20, fontWeight: 800 }}>All Users</h2>
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by username or email…"
+                <input value={search} onChange={e => handleSearch(e.target.value)} placeholder="Search by username or email…"
                   style={{ background: '#111422', border: '1.5px solid #1A1D2E', borderRadius: 10, padding: '8px 14px', color: '#FFFFFF', fontSize: 13, width: 240, outline: 'none' }} />
                 {['all', 'push'].map(f => (
-                  <button key={f} onClick={() => setFilter(f)} style={{
+                  <button key={f} onClick={() => handleFilter(f)} style={{
                     background: filter === f ? '#00C2A8' : '#111422', color: filter === f ? '#0B0E17' : '#A0AEC0',
                     border: '1.5px solid ' + (filter === f ? '#00C2A8' : '#1A1D2E'),
                     borderRadius: 10, padding: '8px 16px', cursor: 'pointer', fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: 1,
@@ -303,9 +314,9 @@ export default function AdminDashboard({ users, stats, gameAnalytics }) {
                     </tr>
                   </thead>
                   <tbody>
-                    {filtered.length === 0
+                    {paginated.length === 0
                       ? <tr><td colSpan={9} style={{ padding: 32, textAlign: 'center', color: '#A0AEC0' }}>No users found.</td></tr>
-                      : filtered.map((u, i) => (
+                      : paginated.map((u, i) => (
                         <tr key={u.id} onClick={() => recipients === 'selected' && toggleSelect(u.id)}
                           style={{ borderTop: '1px solid #1A1D2E', cursor: recipients === 'selected' ? 'pointer' : 'default', backgroundColor: selectedIds.has(u.id) ? 'rgba(0,194,168,0.06)' : 'transparent' }}>
                           {recipients === 'selected' && (
@@ -313,7 +324,7 @@ export default function AdminDashboard({ users, stats, gameAnalytics }) {
                               <input type="checkbox" checked={selectedIds.has(u.id)} readOnly style={{ width: 16, height: 16, accentColor: '#00C2A8', cursor: 'pointer' }} />
                             </td>
                           )}
-                          <td style={{ ...td, color: '#55627E', fontWeight: 700 }}>{i + 1}</td>
+                          <td style={{ ...td, color: '#55627E', fontWeight: 700 }}>{safePage * PAGE_SIZE + i + 1}</td>
                           <td style={td}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                               <AvatarCell avatarUrl={u.avatar_url} username={u.username} />
@@ -337,11 +348,26 @@ export default function AdminDashboard({ users, stats, gameAnalytics }) {
                   </tbody>
                 </table>
               </div>
-              {filtered.length > 0 && (
-                <div style={{ padding: '12px 20px', borderTop: '1px solid #1A1D2E', color: '#55627E', fontSize: 12, fontWeight: 600 }}>
-                  Showing {filtered.length} of {users.length} users
-                </div>
-              )}
+              <div style={{ padding: '12px 20px', borderTop: '1px solid #1A1D2E', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+                <span style={{ color: '#55627E', fontSize: 12, fontWeight: 600 }}>
+                  {filtered.length === 0 ? 'No results' : `${safePage * PAGE_SIZE + 1}–${Math.min((safePage + 1) * PAGE_SIZE, filtered.length)} of ${filtered.length} users`}
+                </span>
+                {totalPages > 1 && (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <button onClick={() => setPage(p => Math.max(0, p - 1))} disabled={safePage === 0} style={pageBtn(safePage === 0)}>← Prev</button>
+                    {Array.from({ length: totalPages }, (_, i) => i).filter(i => i === 0 || i === totalPages - 1 || Math.abs(i - safePage) <= 1).reduce((acc, i, idx, arr) => {
+                      if (idx > 0 && i - arr[idx - 1] > 1) acc.push('…');
+                      acc.push(i);
+                      return acc;
+                    }, []).map((item, idx) =>
+                      item === '…'
+                        ? <span key={`ellipsis-${idx}`} style={{ color: '#55627E', fontSize: 12, padding: '0 4px' }}>…</span>
+                        : <button key={item} onClick={() => setPage(item)} style={pageBtn(false, item === safePage)}>{item + 1}</button>
+                    )}
+                    <button onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))} disabled={safePage === totalPages - 1} style={pageBtn(safePage === totalPages - 1)}>Next →</button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -419,6 +445,12 @@ const inputStyle = { width: '100%', backgroundColor: '#0E111E', border: '1.5px s
 const card = { backgroundColor: '#111422', border: '1.5px solid #1A1D2E', borderRadius: 20, padding: 24 };
 const cardTitle = { fontSize: 14, fontWeight: 800, color: '#FFFFFF', marginBottom: 16 };
 const sectionLabel = { fontSize: 11, fontWeight: 700, color: '#55627E', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 12 };
+const pageBtn = (disabled, active = false) => ({
+  padding: '5px 11px', borderRadius: 8, fontSize: 12, fontWeight: 700, cursor: disabled ? 'not-allowed' : 'pointer',
+  border: '1.5px solid ' + (active ? '#00C2A8' : '#1A1D2E'),
+  backgroundColor: active ? '#00C2A8' : '#0E111E',
+  color: active ? '#0B0E17' : disabled ? '#2D3748' : '#A0AEC0',
+});
 
 // ─── Server-side data fetch ───────────────────────────────────────────────────
 

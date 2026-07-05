@@ -110,7 +110,7 @@ function BarRow({ label, value, total, color = '#00C2A8' }) {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function AdminDashboard({ users, stats, gameAnalytics }) {
+export default function AdminDashboard({ users, stats, gameAnalytics, liveActivity }) {
   const router = useRouter();
   const { signOut } = useClerk();
 
@@ -205,6 +205,16 @@ export default function AdminDashboard({ users, stats, gameAnalytics }) {
           <div style={{ ...card, marginBottom: 40 }}>
             <div style={cardTitle}>📈 New Registrations (last 14 days)</div>
             <ActivityChart data={stats.dailyUsers} color="#C084FC" unit="user" />
+          </div>
+
+          {/* ── Live Activity ─────────────────────────────────────────── */}
+          <div style={sectionLabel}>🟢 Live Activity</div>
+          <div style={{ display: 'flex', gap: 16, marginBottom: 40, flexWrap: 'wrap' }}>
+            <StatCard icon="🟢" label="Live Games Right Now" value={liveActivity.liveGames} color="#48BB78" sub="started in the last 30 min" />
+            <StatCard icon="🕹️" label="Players In Live Games" value={liveActivity.livePlayers} color="#48BB78" />
+            <StatCard icon="⚠️" label="Stuck / Abandoned Games" value={liveActivity.stuckGames} color="#F6AD55" sub="'active' for 30+ min — likely never finished" />
+            <StatCard icon="⏱️" label="Avg Game Duration" value={liveActivity.avgGameDuration} color="#4299E1" />
+            <StatCard icon="🔁" label="Avg Round Duration" value={liveActivity.avgRoundDuration} color="#4299E1" />
           </div>
 
           {/* ── Game Analytics ────────────────────────────────────────── */}
@@ -463,12 +473,15 @@ export async function getServerSideProps(context) {
   const email = clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId)?.emailAddress;
   if (email !== 'kolepidas@gmail.com') return { redirect: { destination: '/', permanent: false } };
 
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   const now = new Date();
   const todayStr = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const weekAgoStr = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const twoWeeksAgoStr = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();
+  // A room still in 'active' status past this age almost certainly isn't really being played anymore
+  const LIVE_WINDOW_MS = 30 * 60 * 1000;
+  const liveWindowStr = new Date(now.getTime() - LIVE_WINDOW_MS).toISOString();
 
   // Run all queries in parallel for speed
   const [
@@ -479,6 +492,9 @@ export async function getServerSideProps(context) {
     { count: validAnswers },
     { data: recentRooms = [] },
     { data: allRounds = [] },
+    { data: activeRooms = [] },
+    { data: finishedDurations = [] },
+    { data: doneRounds = [] },
   ] = await Promise.all([
     supabase.from('users').select('id, clerk_id, username, avatar_url, legacy_email, games_played, wins, total_score, push_token, notifications_enabled, created_at').order('created_at', { ascending: false }),
     supabase.from('rooms').select('id', { count: 'exact', head: true }).eq('status', 'finished'),
@@ -489,6 +505,12 @@ export async function getServerSideProps(context) {
     supabase.from('rooms').select('finished_at').eq('status', 'finished').gte('finished_at', twoWeeksAgoStr).order('finished_at', { ascending: true }),
     // All rounds for letter distribution
     supabase.from('rounds').select('letter').eq('status', 'done'),
+    // Rooms still marked 'active' — split into truly-live vs stuck/abandoned by age
+    supabase.from('rooms').select('id, created_at').eq('status', 'active'),
+    // Finished rooms with both timestamps, for avg game duration
+    supabase.from('rooms').select('created_at, finished_at').eq('status', 'finished'),
+    // Completed rounds with both timestamps, for avg round duration
+    supabase.from('rounds').select('started_at, finished_at').eq('status', 'done'),
   ]);
 
   // ── User stats ────────────────────────────────────────────────────────────
@@ -550,6 +572,44 @@ export async function getServerSideProps(context) {
   // ── Top 5 players ─────────────────────────────────────────────────────────
   const topPlayers = [...users].sort((a, b) => (b.total_score ?? 0) - (a.total_score ?? 0)).slice(0, 5);
 
+  // ── Live activity: split 'active' rooms into truly-live vs stuck/abandoned ─
+  const liveRooms = (activeRooms || []).filter(r => r.created_at >= liveWindowStr);
+  const stuckRooms = (activeRooms || []).filter(r => r.created_at < liveWindowStr);
+
+  let livePlayers = 0;
+  if (liveRooms.length > 0) {
+    const { data: liveRoomPlayers = [] } = await supabase
+      .from('room_players')
+      .select('user_id')
+      .in('room_id', liveRooms.map(r => r.id));
+    livePlayers = new Set((liveRoomPlayers || []).map(p => p.user_id)).size;
+  }
+
+  // ── Avg game / round duration ───────────────────────────────────────────────
+  const avgDurationSec = (rows, startKey, endKey) => {
+    const durations = (rows || [])
+      .filter(r => r[startKey] && r[endKey])
+      .map(r => (new Date(r[endKey]) - new Date(r[startKey])) / 1000)
+      .filter(sec => sec >= 0);
+    if (durations.length === 0) return null;
+    return Math.round(durations.reduce((a, b) => a + b, 0) / durations.length);
+  };
+  const formatDuration = (sec) => {
+    if (sec == null) return '—';
+    if (sec < 60) return `${sec}s`;
+    return `${Math.floor(sec / 60)}m ${sec % 60}s`;
+  };
+  const avgGameDurationSec = avgDurationSec(finishedDurations, 'created_at', 'finished_at');
+  const avgRoundDurationSec = avgDurationSec(doneRounds, 'started_at', 'finished_at');
+
+  const liveActivity = {
+    liveGames: liveRooms.length,
+    livePlayers,
+    stuckGames: stuckRooms.length,
+    avgGameDuration: formatDuration(avgGameDurationSec),
+    avgRoundDuration: formatDuration(avgRoundDurationSec),
+  };
+
   const gameAnalytics = {
     totalGames: totalGames || 0,
     totalRounds: totalRounds || 0,
@@ -564,5 +624,5 @@ export async function getServerSideProps(context) {
     topPlayers,
   };
 
-  return { props: { users, stats, gameAnalytics } };
+  return { props: { users, stats, gameAnalytics, liveActivity } };
 }

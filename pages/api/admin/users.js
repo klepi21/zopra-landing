@@ -14,7 +14,7 @@ export default async function handler(req, res) {
   const email = clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId)?.emailAddress;
   if (email !== 'kolepidas@gmail.com') return res.status(403).json({ error: 'Forbidden' });
 
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   const { data, error } = await supabase
     .from('users')

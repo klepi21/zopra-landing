@@ -27,7 +27,7 @@ export default async function handler(req, res) {
   const { title, body, recipients, userIds } = req.body;
   if (!title || !body) return res.status(400).json({ error: 'title and body are required' });
 
-  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+  const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   // Build the Supabase query based on recipient mode
   let query = supabase.from('users').select('id, push_token, notifications_enabled');

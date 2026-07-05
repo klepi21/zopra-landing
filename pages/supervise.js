@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { getAuth, clerkClient } from '@clerk/nextjs/server';
 import { createClient } from '@supabase/supabase-js';
 import { useClerk } from '@clerk/nextjs';
@@ -39,14 +39,29 @@ function StatCard({ label, value, color = '#00C2A8', icon, sub }) {
 // Simple SVG bar chart for daily activity
 function ActivityChart({ data, color = '#00C2A8', unit = 'game' }) {
   const [hovered, setHovered] = useState(null);
+  const containerRef = useRef(null);
+  const [measuredWidth, setMeasuredWidth] = useState(560);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(entries => {
+      const w = entries[0]?.contentRect.width;
+      if (w > 0) setMeasuredWidth(w);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+
   if (!data || data.length === 0) return <div style={{ color: '#55627E', fontSize: 13, padding: 16 }}>No data yet.</div>;
   const max = Math.max(...data.map(d => d.count), 1);
   // TT_H = space reserved above bars for the tooltip bubble
-  const W = 560, H = 80, TT_H = 44, barW = Math.floor((W - data.length * 4) / data.length);
+  // W matches the measured container width 1:1 so the SVG isn't scaled/stretched
+  const W = Math.max(280, Math.round(measuredWidth)), H = 80, TT_H = 44, barW = Math.floor((W - data.length * 4) / data.length);
   const dimColor = color + '33';
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <svg viewBox={`0 0 ${W} ${TT_H + H + 24}`} style={{ width: '100%', maxWidth: W }}>
+    <div ref={containerRef} style={{ overflowX: 'auto' }}>
+      <svg viewBox={`0 0 ${W} ${TT_H + H + 24}`} style={{ width: '100%', display: 'block' }}>
         {data.map((d, i) => {
           const barH = Math.max(4, Math.round((d.count / max) * H));
           const x = i * (barW + 4);

@@ -123,6 +123,8 @@ export default function AdminDashboard({ users, stats, gameAnalytics, liveActivi
   const [selectedIds, setSelectedIds] = useState(new Set());
   const [sending, setSending] = useState(false);
   const [sendResult, setSendResult] = useState(null);
+  const [cleaning, setCleaning] = useState(false);
+  const [cleanupResult, setCleanupResult] = useState(null);
 
   const PAGE_SIZE = 20;
 
@@ -170,6 +172,17 @@ export default function AdminDashboard({ users, stats, gameAnalytics, liveActivi
 
   const handleSignOut = () => signOut(() => router.push('/'));
 
+  const handleCleanup = async () => {
+    setCleaning(true); setCleanupResult(null);
+    try {
+      const res = await fetch('/api/admin/cleanup-rooms', { method: 'POST' });
+      const data = await res.json();
+      setCleanupResult({ ok: res.ok, message: data.message || (res.ok ? 'Done!' : 'Error') });
+      if (res.ok) router.replace(router.asPath);
+    } catch (e) { setCleanupResult({ ok: false, message: e.message }); }
+    finally { setCleaning(false); }
+  };
+
   const ga = gameAnalytics;
 
   return (
@@ -208,11 +221,26 @@ export default function AdminDashboard({ users, stats, gameAnalytics, liveActivi
           </div>
 
           {/* ── Live Activity ─────────────────────────────────────────── */}
-          <div style={sectionLabel}>🟢 Live Activity</div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ ...sectionLabel, marginBottom: 0 }}>🟢 Live Activity</div>
+            {liveActivity.stuckGames > 0 && (
+              <button onClick={handleCleanup} disabled={cleaning} style={{
+                background: 'transparent', border: '1.5px solid #F6AD55', color: '#F6AD55', borderRadius: 10,
+                padding: '7px 14px', cursor: cleaning ? 'not-allowed' : 'pointer', fontSize: 12, fontWeight: 700,
+              }}>
+                {cleaning ? 'Cleaning…' : `🧹 Clean Up ${liveActivity.stuckGames} Stuck Game${liveActivity.stuckGames !== 1 ? 's' : ''}`}
+              </button>
+            )}
+          </div>
+          {cleanupResult && (
+            <div style={{ marginBottom: 12, padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: 700, backgroundColor: cleanupResult.ok ? 'rgba(72,187,120,0.1)' : 'rgba(255,77,77,0.1)', color: cleanupResult.ok ? '#48BB78' : '#FF4D4D', border: `1.5px solid ${cleanupResult.ok ? '#48BB78' : '#FF4D4D'}` }}>
+              {cleanupResult.ok ? '✓ ' : '✕ '}{cleanupResult.message}
+            </div>
+          )}
           <div style={{ display: 'flex', gap: 16, marginBottom: 40, flexWrap: 'wrap' }}>
             <StatCard icon="🟢" label="Live Games Right Now" value={liveActivity.liveGames} color="#48BB78" sub="started in the last 30 min" />
             <StatCard icon="🕹️" label="Players In Live Games" value={liveActivity.livePlayers} color="#48BB78" />
-            <StatCard icon="⚠️" label="Stuck / Abandoned Games" value={liveActivity.stuckGames} color="#F6AD55" sub="'active' for 30+ min — likely never finished" />
+            <StatCard icon="⚠️" label="Stuck / Abandoned Games" value={liveActivity.stuckGames} color="#F6AD55" sub="'active' for 2h+ — never finished" />
             <StatCard icon="⏱️" label="Avg Game Duration" value={liveActivity.avgGameDuration} color="#4299E1" />
             <StatCard icon="🔁" label="Avg Round Duration" value={liveActivity.avgRoundDuration} color="#4299E1" />
           </div>
@@ -479,9 +507,12 @@ export async function getServerSideProps(context) {
   const todayStr = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const weekAgoStr = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
   const twoWeeksAgoStr = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000).toISOString();
-  // A room still in 'active' status past this age almost certainly isn't really being played anymore
+  // A room still 'active' within this window is plausibly still being played
   const LIVE_WINDOW_MS = 30 * 60 * 1000;
   const liveWindowStr = new Date(now.getTime() - LIVE_WINDOW_MS).toISOString();
+  // Past this age it's effectively stuck/abandoned — matches the cleanup job's threshold
+  const STUCK_THRESHOLD_MS = 2 * 60 * 60 * 1000;
+  const stuckThresholdStr = new Date(now.getTime() - STUCK_THRESHOLD_MS).toISOString();
 
   // Run all queries in parallel for speed
   const [
@@ -573,8 +604,9 @@ export async function getServerSideProps(context) {
   const topPlayers = [...users].sort((a, b) => (b.total_score ?? 0) - (a.total_score ?? 0)).slice(0, 5);
 
   // ── Live activity: split 'active' rooms into truly-live vs stuck/abandoned ─
+  // (rooms between the live window and stuck threshold are ambiguous and shown in neither bucket)
   const liveRooms = (activeRooms || []).filter(r => r.created_at >= liveWindowStr);
-  const stuckRooms = (activeRooms || []).filter(r => r.created_at < liveWindowStr);
+  const stuckRooms = (activeRooms || []).filter(r => r.created_at < stuckThresholdStr);
 
   let livePlayers = 0;
   if (liveRooms.length > 0) {
@@ -586,11 +618,13 @@ export async function getServerSideProps(context) {
   }
 
   // ── Avg game / round duration ───────────────────────────────────────────────
+  // Cap at 2h so games force-closed by the stuck-game cleanup (long-idle 'active' rooms) don't skew the average
+  const MAX_PLAUSIBLE_DURATION_SEC = 2 * 60 * 60;
   const avgDurationSec = (rows, startKey, endKey) => {
     const durations = (rows || [])
       .filter(r => r[startKey] && r[endKey])
       .map(r => (new Date(r[endKey]) - new Date(r[startKey])) / 1000)
-      .filter(sec => sec >= 0);
+      .filter(sec => sec >= 0 && sec <= MAX_PLAUSIBLE_DURATION_SEC);
     if (durations.length === 0) return null;
     return Math.round(durations.reduce((a, b) => a + b, 0) / durations.length);
   };

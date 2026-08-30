@@ -30,18 +30,28 @@ export default async function handler(req, res) {
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY);
 
   // Build the Supabase query based on recipient mode
-  let query = supabase.from('users').select('id, push_token, notifications_enabled');
+  const buildQuery = () => {
+    let query = supabase.from('users').select('id, push_token, notifications_enabled');
 
-  if (recipients === 'selected' && Array.isArray(userIds) && userIds.length > 0) {
-    // Hand-picked users — filter to those with a valid push token
-    query = query.in('id', userIds).eq('notifications_enabled', true);
-  } else {
-    // Default: everyone who has opted in to push notifications
-    query = query.eq('notifications_enabled', true);
+    if (recipients === 'selected' && Array.isArray(userIds) && userIds.length > 0) {
+      // Hand-picked users — filter to those with a valid push token
+      query = query.in('id', userIds).eq('notifications_enabled', true);
+    } else {
+      // Default: everyone who has opted in to push notifications
+      query = query.eq('notifications_enabled', true);
+    }
+    return query.order('id', { ascending: true });
+  };
+
+  // Supabase caps each response at 1000 rows — page through so broadcasts reach everyone
+  const PAGE = 1000;
+  const targetUsers = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await buildQuery().range(from, from + PAGE - 1);
+    if (error) return res.status(500).json({ error: error.message });
+    targetUsers.push(...(data || []));
+    if (!data || data.length < PAGE) break;
   }
-
-  const { data: targetUsers, error } = await query;
-  if (error) return res.status(500).json({ error: error.message });
 
   // Filter to users with a valid Expo push token
   const tokens = (targetUsers || [])

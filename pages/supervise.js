@@ -518,6 +518,20 @@ export async function getServerSideProps(context) {
 
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY);
 
+  // Supabase caps each response at 1000 rows, so unbounded selects silently
+  // truncate once tables grow — page through with .range() to get everything.
+  const PAGE = 1000;
+  const fetchAll = async (buildQuery) => {
+    const all = [];
+    for (let from = 0; ; from += PAGE) {
+      const { data, error } = await buildQuery().range(from, from + PAGE - 1);
+      if (error) { console.error('fetchAll:', error.message); break; }
+      all.push(...(data || []));
+      if (!data || data.length < PAGE) break;
+    }
+    return all;
+  };
+
   const now = new Date();
   const todayStr = new Date(now.getFullYear(), now.getMonth(), now.getDate()).toISOString();
   const weekAgoStr = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -531,32 +545,32 @@ export async function getServerSideProps(context) {
 
   // Run all queries in parallel for speed
   const [
-    { data: users = [] },
+    users,
     { count: totalGames },
     { count: totalRounds },
     { count: totalAnswers },
     { count: validAnswers },
-    { data: recentRooms = [] },
-    { data: allRounds = [] },
-    { data: activeRooms = [] },
-    { data: finishedDurations = [] },
-    { data: doneRounds = [] },
+    recentRooms,
+    allRounds,
+    activeRooms,
+    finishedDurations,
+    doneRounds,
   ] = await Promise.all([
-    supabase.from('users').select('id, clerk_id, username, avatar_url, legacy_email, games_played, wins, total_score, push_token, notifications_enabled, created_at').order('created_at', { ascending: false }),
+    fetchAll(() => supabase.from('users').select('id, clerk_id, username, avatar_url, legacy_email, games_played, wins, total_score, push_token, notifications_enabled, created_at').order('created_at', { ascending: false }).order('id', { ascending: true })),
     supabase.from('rooms').select('id', { count: 'exact', head: true }).eq('status', 'finished'),
     supabase.from('rounds').select('id', { count: 'exact', head: true }).eq('status', 'done'),
     supabase.from('answers').select('id', { count: 'exact', head: true }),
     supabase.from('answers').select('id', { count: 'exact', head: true }).eq('is_valid', true),
     // Recent rooms for the daily chart
-    supabase.from('rooms').select('finished_at').eq('status', 'finished').gte('finished_at', twoWeeksAgoStr).order('finished_at', { ascending: true }),
+    fetchAll(() => supabase.from('rooms').select('id, finished_at').eq('status', 'finished').gte('finished_at', twoWeeksAgoStr).order('finished_at', { ascending: true }).order('id', { ascending: true })),
     // All rounds for letter distribution
-    supabase.from('rounds').select('letter').eq('status', 'done'),
+    fetchAll(() => supabase.from('rounds').select('letter, id').eq('status', 'done').order('id', { ascending: true })),
     // Rooms still marked 'active' — split into truly-live vs stuck/abandoned by age
-    supabase.from('rooms').select('id, created_at').eq('status', 'active'),
+    fetchAll(() => supabase.from('rooms').select('id, created_at').eq('status', 'active').order('id', { ascending: true })),
     // Finished rooms with both timestamps, for avg game duration
-    supabase.from('rooms').select('created_at, finished_at').eq('status', 'finished'),
+    fetchAll(() => supabase.from('rooms').select('id, created_at, finished_at').eq('status', 'finished').order('id', { ascending: true })),
     // Completed rounds with both timestamps, for avg round duration
-    supabase.from('rounds').select('started_at, finished_at').eq('status', 'done'),
+    fetchAll(() => supabase.from('rounds').select('id, started_at, finished_at').eq('status', 'done').order('id', { ascending: true })),
   ]);
 
   // ── User stats ────────────────────────────────────────────────────────────

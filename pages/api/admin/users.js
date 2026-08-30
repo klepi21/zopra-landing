@@ -16,12 +16,20 @@ export default async function handler(req, res) {
 
   const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY);
 
-  const { data, error } = await supabase
-    .from('users')
-    .select('id, clerk_id, username, avatar_url, legacy_email, games_played, wins, total_score, push_token, notifications_enabled, created_at')
-    .order('created_at', { ascending: false });
+  // Supabase caps each response at 1000 rows — page through to return everyone
+  const PAGE = 1000;
+  const all = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('id, clerk_id, username, avatar_url, legacy_email, games_played, wins, total_score, push_token, notifications_enabled, created_at')
+      .order('created_at', { ascending: false })
+      .order('id', { ascending: true })
+      .range(from, from + PAGE - 1);
+    if (error) return res.status(500).json({ error: error.message });
+    all.push(...(data || []));
+    if (!data || data.length < PAGE) break;
+  }
 
-  if (error) return res.status(500).json({ error: error.message });
-
-  return res.status(200).json(data);
+  return res.status(200).json(all);
 }
